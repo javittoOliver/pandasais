@@ -1,2 +1,8 @@
 streamlit
-openai
+openai==0.28
+groq
+openpyxl
+soundfile
+openai-whisper
+ffmpeg-python
+torch
