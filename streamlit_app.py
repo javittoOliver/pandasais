@@ -1,4 +1,5 @@
 import os
+import numpy as np
 import streamlit as st
 import pandas as pd
 from groq import Groq
@@ -8,6 +9,7 @@ from pandasai import SmartDataframe
 from langchain_groq.chat_models import ChatGroq
 import json
 import io
+import soundfile as sf
 
 # Configura la página de Streamlit para que use todo el ancho disponible
 st.set_page_config(layout="wide")
