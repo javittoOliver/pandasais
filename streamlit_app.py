@@ -101,32 +101,53 @@ if "transcripcion" not in st.session_state:
     st.session_state["transcripcion"] = ""
 
 
-# Si se ha cargado un archivo de audio, lo transcribe y envía la transcripción al modelo
-if uploaded_audio is not None:
+# Si se ha cargado un archivo de audio, lo transcribe y muestra un mensaje cuando ha terminado
+if uploaded_audio is not None and not st.session_state["transcripcion_finalizada"]:
     st.write("Transcribiendo el audio...")
-    transcripcion = transcribir_audio(uploaded_audio)
-    st.write("Transcripción del audio:")
-    st.write(transcripcion)
     
-    # Envía la transcripción al modelo para corrección gramatical y asignación de interlocutores
-    prompt = f"Corrige gramaticalmente el siguiente texto y asigna interlocutores:\n\n{transcripcion}"
+    # Transcribe el audio
+    transcripcion = transcribir_audio_por_segmentos(uploaded_audio, segment_duration=30)
     
-    st.session_state["chat_history"].append(
-        {"role": "user", "content": prompt},
-    )
-    with st.chat_message("user"):
-        st.write(prompt)
-    
-    response = generate_content(modelo, prompt, system_message, max_tokens, temperature)
-    
-    with st.chat_message("assistant"):
-        stream_generator = get_streaming_response(response)
-        streamed_response = st.write_stream(stream_generator)
-    
-    st.session_state["chat_history"].append(
-        {"role": "assistant", "content": streamed_response},
-    )
+    # Muestra un mensaje de que la transcripción ha finalizado
+    st.write("La transcripción ha finalizado. Puedes hacer preguntas sobre el contenido.")
 
+    # Guardar la transcripción en el estado de sesión para referencia futura
+    st.session_state["transcripcion"] = transcripcion
+
+    # Marcar en el estado de sesión que la transcripción ha terminado
+    st.session_state["transcripcion_finalizada"] = True
+
+# Mostrar la caja de texto para hacer preguntas solo si la transcripción ha finalizado
+if st.session_state["transcripcion_finalizada"] and  uploaded_audio is not None:
+    prompt = st.chat_input("Haz una pregunta sobre la transcripción...")
+
+    if prompt:
+        # Añade la pregunta del usuario al historial de chat
+        st.session_state["chat_history"].append(
+            {"role": "user", "content": prompt},
+        )
+        with st.chat_message("user"):
+            st.write(prompt)
+        
+        # Prepara el prompt para el modelo
+        if st.session_state["transcripcion"]:
+            response_prompt = f"{prompt}\n\nTexto transcrito:\n{st.session_state['transcripcion']}"
+        else:
+            response_prompt = prompt
+        
+        # Genera la respuesta para la pregunta del usuario
+        response = generate_content(modelo, response_prompt, system_message, max_tokens, temperature)
+        
+        # Muestra la respuesta generada por el asistente en streaming
+        with st.chat_message("assistant"):
+            stream_generator = get_streaming_response(response)
+            streamed_response = st.write_stream(stream_generator)
+        
+        # Añade la respuesta del asistente al historial de chat
+        st.session_state["chat_history"].append(
+            {"role": "assistant", "content": streamed_response},
+        )
+        
 # Si se ha cargado un archivo Excel, procesa y muestra su contenido
 if uploaded_file is not None:
     # Carga el archivo Excel en un DataFrame
@@ -152,7 +173,6 @@ if uploaded_file is not None:
     # Solicita preguntas separadas para cada barra de chat
     #col1, col2 = st.columns(2)
 
-    
     prompt_pandasai = st.chat_input("Haz una petición para el archivo (PandasAI)...")
     
     prompt_dict = st.chat_input("Haz una pregunta sobre el archivo (Diccionario)...")
