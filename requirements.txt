@@ -1,4 +1,6 @@
 streamlit
+pandas==1.5.3
+numpy==1.23.5
 openai==0.28
 groq
 openpyxl
@@ -6,7 +8,5 @@ soundfile
 openai-whisper
 ffmpeg-python
 torch
-pandasai==2.2.14
+pandasai
 langchain-groq
-numpy==1.23.5
-pandas==1.5.3
