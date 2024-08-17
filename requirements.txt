@@ -8,5 +8,5 @@ ffmpeg-python
 torch
 pandasai==2.2.14
 langchain-groq
-numpy
+numpy==1.23.5
 pandas==1.5.3
