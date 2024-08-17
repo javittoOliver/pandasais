@@ -6,7 +6,7 @@ soundfile
 openai-whisper
 ffmpeg-python
 torch
-pandasai
+pandasai==2.2.14
 langchain-groq
 numpy
-pandas
+pandas==1.5.3
