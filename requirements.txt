@@ -1,5 +1,5 @@
 streamlit
-numpy==1.23.5
+numpy
 openai==0.28
 groq
 openpyxl
