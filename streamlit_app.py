@@ -112,7 +112,7 @@ with st.sidebar:
     modelo = st.selectbox("Modelo", ["llama3-70b-8192", "llama3-8b-8192", "mixtral-8x7b-32768", "gemma-7b-it"])
 
     # Permite al usuario ingresar un mensaje de sistema
-    system_message = st.text_input("System Message", placeholder="Default : Eres una asistente amigable.")
+    system_message = st.text_input("System Message", placeholder="Default : Eres un asistente amigable.")
     
     # Ajusta la temperatura del modelo para controlar la creatividad
     temperature = st.slider("Temperatura", 0.0, 1.0, 0.5, 0.2)
