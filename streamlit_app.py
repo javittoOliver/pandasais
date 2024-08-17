@@ -42,8 +42,6 @@ def generate_content(modelo:str, prompt:str, system_message:str="You are a helpf
     return stream
 
 
-
-
 # Función para transcribir audio usando Whisper
 def transcribir_audio(audio):
     # Verificar si la GPU admite FP16
@@ -95,6 +93,13 @@ if "chat_history" not in st.session_state:
 for message in st.session_state["chat_history"]:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
+
+# Inicializa el estado de sesión si no existe
+if "transcripcion_finalizada" not in st.session_state:
+    st.session_state["transcripcion_finalizada"] = False
+if "transcripcion" not in st.session_state:
+    st.session_state["transcripcion"] = ""
+
 
 # Si se ha cargado un archivo de audio, lo transcribe y envía la transcripción al modelo
 if uploaded_audio is not None:
