@@ -7,6 +7,7 @@ import whisper
 from pandasai import SmartDataframe
 from langchain_groq.chat_models import ChatGroq
 import json
+import io
 
 # Configura la página de Streamlit para que use todo el ancho disponible
 st.set_page_config(layout="wide")
