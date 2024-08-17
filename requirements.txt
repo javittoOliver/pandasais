@@ -1,5 +1,6 @@
 streamlit
 numpy
+pandas==1.5.3
 openai==0.28
 groq
 openpyxl
