@@ -9,3 +9,4 @@ torch
 pandasai
 langchain-groq
 numpy
+pandas
