@@ -11,12 +11,13 @@ import json
 # Configura la página de Streamlit para que use todo el ancho disponible
 st.set_page_config(layout="wide")
 
+
 # Establece la clave API para acceder a la API de Groq desde st.secrets
 api_key = st.secrets["general"]["GROQ_API_KEY"]
 
 # Inicializa el cliente de Groq usando la clave API
 client = Groq(
-    api_key = api_key,
+    api_key=api_key,
 )
 
 # Función para obtener respuestas en streaming desde la API
@@ -27,11 +28,13 @@ def get_streaming_response(response):
 
 # Función para generar contenido a partir de un modelo Groq
 def generate_content(modelo:str, prompt:str, system_message:str="You are a helpful assistant.", max_tokens:int=1024, temperature:int=0.5):
+    # Incluye el historial de chat en los mensajes
+    messages = [{"role": "system", "content": system_message}]
+    messages += st.session_state["chat_history"]
+    messages.append({"role": "user", "content": prompt})
+    
     stream = client.chat.completions.create(
-        messages=[
-            {"role": "system", "content": system_message},
-            {"role": "user", "content": prompt},
-        ],
+        messages=messages,
         model=modelo,
         temperature=temperature,
         max_tokens=max_tokens,
@@ -41,31 +44,60 @@ def generate_content(modelo:str, prompt:str, system_message:str="You are a helpf
     ) 
     return stream
 
-
 # Función para transcribir audio usando Whisper
-def transcribir_audio(audio):
+def transcribir_audio_por_segmentos(uploaded_audio, segment_duration=30):
+    # Leer el contenido del archivo de audio
+    audio_bytes = uploaded_audio.read()
+    
+    # Convertir los bytes del audio a un archivo temporal que soundfile pueda leer
+    audio_file = io.BytesIO(audio_bytes)
+    
+    # Leer el archivo de audio usando soundfile para obtener los datos de audio y la frecuencia de muestreo
+    audio_data, sample_rate = sf.read(audio_file)
+    
+    # Convertir a mono si es estéreo
+    if audio_data.ndim > 1:
+        audio_data = np.mean(audio_data, axis=1)
+    
+    # Convertir los datos de audio a float32
+    audio_data = audio_data.astype(np.float32)
+    
+    # Calcular el número de muestras por segmento
+    segment_samples = int(segment_duration * sample_rate)
+    
     # Verificar si la GPU admite FP16
     if torch.cuda.is_available() and torch.cuda.get_device_capability(0)[0] >= 7:
         fp16_available = True
     else:
         fp16_available = False
     
-    model = whisper.load_model("base")
-
-    if fp16_available:
-        result = model.transcribe(audio)
-    else:
-        result = model.transcribe(audio, fp16=False)     
+    # Cargar el modelo Whisper
+    model = whisper.load_model("small")
     
-    transcripcion = result["text"]
-    return transcripcion
+    transcripcion_completa = ""
+
+    # Procesar y transcribir cada segmento del audio
+    for start in range(0, len(audio_data), segment_samples):
+        end = min(start + segment_samples, len(audio_data))
+        segment = audio_data[start:end]
+        
+        # Transcribir el segmento de audio
+        if fp16_available:
+            result = model.transcribe(segment, fp16=True)
+        else:
+            result = model.transcribe(segment, fp16=False)
+        
+        # Concatenar la transcripción del segmento al resultado final
+        transcripcion_completa += result["text"] + " "
+    
+    return transcripcion_completa.strip()
 
 # Título de la aplicación Streamlit
 st.title("Loope x- 🤖")
 
 # Barra lateral para cargar archivo, seleccionar modelo y ajustar parámetros
 with st.sidebar:
-    st.write("Estás usando  **Streamlit💻** and **Groq🖥**")
+    st.write("Estás usando  **Streamlit💻** and **Groq🖥**\n from Vitto ✳️")
     
     # Permite al usuario subir un archivo Excel
     uploaded_file = st.file_uploader("Sube un archivo Excel", type=["xlsx", "xls"])
@@ -74,10 +106,10 @@ with st.sidebar:
     uploaded_audio = st.file_uploader("Sube un archivo de audio", type=["mp3", "wav", "ogg", "flac"])
 
     # Permite al usuario seleccionar el modelo a utilizar
-    modelo = st.selectbox("Modelo", ["llama3-8b-8192", "mixtral-8x7b-32768", "llama3-70b-8192", "gemma-7b-it"])
+    modelo = st.selectbox("Modelo", ["llama3-70b-8192", "llama3-8b-8192", "mixtral-8x7b-32768", "gemma-7b-it"])
 
     # Permite al usuario ingresar un mensaje de sistema
-    system_message = st.text_input("System Message", placeholder="Default : You are a helpful assistant.")
+    system_message = st.text_input("System Message", placeholder="Default : Eres una asistente amigable.")
     
     # Ajusta la temperatura del modelo para controlar la creatividad
     temperature = st.slider("Temperatura", 0.0, 1.0, 0.5, 0.2)
@@ -94,12 +126,12 @@ for message in st.session_state["chat_history"]:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
 
+
 # Inicializa el estado de sesión si no existe
 if "transcripcion_finalizada" not in st.session_state:
     st.session_state["transcripcion_finalizada"] = False
 if "transcripcion" not in st.session_state:
     st.session_state["transcripcion"] = ""
-
 
 # Si se ha cargado un archivo de audio, lo transcribe y muestra un mensaje cuando ha terminado
 if uploaded_audio is not None and not st.session_state["transcripcion_finalizada"]:
@@ -147,7 +179,7 @@ if st.session_state["transcripcion_finalizada"] and  uploaded_audio is not None:
         st.session_state["chat_history"].append(
             {"role": "assistant", "content": streamed_response},
         )
-        
+
 # Si se ha cargado un archivo Excel, procesa y muestra su contenido
 if uploaded_file is not None:
     # Carga el archivo Excel en un DataFrame
@@ -212,6 +244,7 @@ if uploaded_file is not None:
         st.session_state["chat_history"].append(
             {"role": "assistant", "content": streamed_response},
         )
+
 # Si no se ha cargado un archivo, permite hacer preguntas generales
 if uploaded_file is None and uploaded_audio is None:
     prompt = st.chat_input("Haz una pregunta general...")
