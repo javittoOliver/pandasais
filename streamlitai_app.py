@@ -140,27 +140,35 @@ if "transcripcion" not in st.session_state:
 if uploaded_audio is not None and not st.session_state["transcripcion_finalizada"]:
     st.write("Transcribiendo el audio...")
     
-    # Transcribe el audio
-    transcripcion = transcribir_audio_por_segmentos(uploaded_audio, segment_duration=30)
-    
-    # Muestra un mensaje de que la transcripción ha finalizado
-    st.write("La transcripción ha finalizado. Puedes hacer preguntas sobre el contenido.")
+    try:
+        # Intenta transcribir el audio
+        transcripcion = transcribir_audio_por_segmentos(uploaded_audio, segment_duration=30)
+        
+        # Muestra un mensaje de que la transcripción ha finalizado
+        st.write("La transcripción ha finalizado. Puedes hacer preguntas sobre el contenido.")
+        
+        # Guardar la transcripción en el estado de sesión para referencia futura
+        st.session_state["transcripcion"] = transcripcion
+        
+        # Marcar en el estado de sesión que la transcripción ha terminado
+        st.session_state["transcripcion_finalizada"] = True
 
-    # Guardar la transcripción en el estado de sesión para referencia futura
-    st.session_state["transcripcion"] = transcripcion
-
-    # Marcar en el estado de sesión que la transcripción ha terminado
-    st.session_state["transcripcion_finalizada"] = True
+    except Exception as e:
+        # Manejo de errores específicos, como la duración del audio
+        if "audio is too long" in str(e).lower():
+            st.error("El audio es demasiado extenso para ser procesado. Intenta con un archivo más corto.")
+        else:
+            # Error general
+            st.error("Ocurrió un error al transcribir el audio. Por favor, intenta nuevamente.")
 
 # Mostrar la caja de texto para hacer preguntas solo si la transcripción ha finalizado
-if st.session_state["transcripcion_finalizada"] and  uploaded_audio is not None:
+if st.session_state["transcripcion_finalizada"] and uploaded_audio is not None:
     prompt = st.chat_input("Haz una pregunta sobre la transcripción...")
 
     if prompt:
         # Añade la pregunta del usuario al historial de chat
-        st.session_state["chat_history"].append(
-            {"role": "user", "content": prompt},
-        )
+        st.session_state["chat_history"].append({"role": "user", "content": prompt})
+        
         with st.chat_message("user"):
             st.write(prompt)
         
@@ -170,18 +178,20 @@ if st.session_state["transcripcion_finalizada"] and  uploaded_audio is not None:
         else:
             response_prompt = prompt
         
-        # Genera la respuesta para la pregunta del usuario
-        response = generate_content(modelo, response_prompt, system_message, max_tokens, temperature)
+        try:
+            # Genera la respuesta para la pregunta del usuario
+            response = generate_content(modelo, response_prompt, system_message, max_tokens, temperature)
+            
+            # Muestra la respuesta generada por el asistente en streaming
+            with st.chat_message("assistant"):
+                stream_generator = get_streaming_response(response)
+                streamed_response = st.write_stream(stream_generator)
+            
+            # Añade la respuesta del asistente al historial de chat
+            st.session_state["chat_history"].append({"role": "assistant", "content": streamed_response})
         
-        # Muestra la respuesta generada por el asistente en streaming
-        with st.chat_message("assistant"):
-            stream_generator = get_streaming_response(response)
-            streamed_response = st.write_stream(stream_generator)
-        
-        # Añade la respuesta del asistente al historial de chat
-        st.session_state["chat_history"].append(
-            {"role": "assistant", "content": streamed_response},
-        )
+        except Exception as e:
+            st.error("Ocurrió un error al generar la respuesta. Por favor, intenta nuevamente.")
 
 # Si se ha cargado un archivo Excel, procesa y muestra su contenido
 if uploaded_file is not None:
