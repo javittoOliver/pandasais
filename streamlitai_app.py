@@ -218,7 +218,7 @@ if uploaded_file is not None:
                 st.write(prompt_pandasai)
 
             # Solicita explícitamente código Python en la respuesta
-            code_prompt = f"Genera el código Python necesario para resolver el siguiente problema:\n\n{prompt_pandasai}"
+            code_prompt = f"Genera el código Python necesario para resolver el siguiente problema, y responde en el mismo idioma que la pregunta:\n\n{prompt_pandasai}"
             response_pandasai = smart_df.chat(code_prompt)
 
             with st.chat_message("assistant"):
