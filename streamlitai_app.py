@@ -173,15 +173,19 @@ if st.session_state["transcripcion_finalizada"] and  uploaded_audio is not None:
         # Genera la respuesta para la pregunta del usuario
         response = generate_content(modelo, response_prompt, system_message, max_tokens, temperature)
         
-        # Muestra la respuesta generada por el asistente en streaming
         with st.chat_message("assistant"):
-            stream_generator = get_streaming_response(response)
-            streamed_response = st.write_stream(stream_generator)
-        
-        # Añade la respuesta del asistente al historial de chat
-        st.session_state["chat_history"].append(
-            {"role": "assistant", "content": streamed_response},
-        )
+    stream_generator = get_streaming_response(response)
+    
+    # Construye la respuesta mientras la recibe en streaming
+    streamed_response = ""
+    for chunk in stream_generator:
+        streamed_response += chunk
+        st.write(chunk)  # Escribe el texto en streaming
+    
+    # Guarda la respuesta completa en el historial de chat
+    st.session_state["chat_history"].append(
+        {"role": "assistant", "content": streamed_response},
+    )
 
 # Si se ha cargado un archivo Excel, procesa y muestra su contenido
 if uploaded_file is not None:
@@ -236,9 +240,16 @@ if uploaded_file is not None:
 
             with st.chat_message("assistant"):
                 stream_generator = get_streaming_response(response)
-                streamed_response = st.write_stream(stream_generator)
-
-            st.session_state["chat_history"].append({"role": "assistant", "content": streamed_response})
+    
+                # Construye la respuesta mientras la recibe en streaming
+                streamed_response = ""
+                for chunk in stream_generator:
+                    streamed_response += chunk
+                    st.write(chunk)  # Escribe el texto en streaming
+    
+                # Guarda la respuesta completa en el historial de chat
+                st.session_state["chat_history"].append({"role": "assistant", "content": streamed_response},
+                )
 
     except Exception as e:
         # Muestra un mensaje de error simple en caso de que ocurra un problema
@@ -259,11 +270,15 @@ if uploaded_file is None and uploaded_audio is None:
         
         with st.chat_message("assistant"):
             stream_generator = get_streaming_response(response)
-            streamed_response = st.write_stream(stream_generator)
-        
-        st.session_state["chat_history"].append(
-            {"role": "assistant", "content": streamed_response},
-        )
+    
+            # Construye la respuesta mientras la recibe en streaming
+            streamed_response = ""
+            for chunk in stream_generator:
+                streamed_response += chunk
+                st.write(chunk)  # Escribe el texto en streaming
+    
+            # Guarda la respuesta completa en el historial de chat
+            st.session_state["chat_history"].append({"role": "assistant", "content": streamed_response},)
 
 # Verificar si el archivo existe
 
