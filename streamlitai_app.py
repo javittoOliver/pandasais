@@ -225,6 +225,16 @@ if uploaded_file is not None:
                 st.write(response_pandasai)
 
             st.session_state["chat_history"].append({"role": "assistant", "content": response_pandasai})
+            
+            # Verificar si el archivo existe
+            if os.path.exists("exports/charts/temp_chart.png"):
+                st.image("exports/charts/temp_chart.png")
+                os.remove("exports/charts/temp_chart.png")
+            else:
+                if 'response' in locals():
+                    st.write(response)
+                else:
+                    st.write("")            
 
         if prompt_dict:
             st.session_state["chat_history"].append({"role": "user", "content": prompt_dict})
@@ -264,14 +274,3 @@ if uploaded_file is None and uploaded_audio is None:
         st.session_state["chat_history"].append(
             {"role": "assistant", "content": streamed_response},
         )
-
-# Verificar si el archivo existe
-
-if os.path.exists("exports/charts/temp_chart.png"):
-    st.image("exports/charts/temp_chart.png")
-    os.remove("exports/charts/temp_chart.png")
-else:
-    if 'response' in locals():
-        st.write(response)
-    else:
-        st.write("")
