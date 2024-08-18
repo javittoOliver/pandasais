@@ -24,11 +24,25 @@ client = Groq(
     api_key=api_key,
 )
 
-# Función para obtener respuestas en streaming desde la API
 def get_streaming_response(response):
     for chunk in response:
         if chunk.choices[0].delta.content:
             yield chunk.choices[0].delta.content
+
+# Muestra la respuesta generada por el asistente en streaming
+with st.chat_message("assistant"):
+    stream_generator = get_streaming_response(response)
+    
+    # Construye la respuesta mientras la recibe en streaming
+    streamed_response = ""
+    for chunk in stream_generator:
+        streamed_response += chunk
+        st.write(chunk)  # Escribe el texto en streaming
+    
+    # Guarda la respuesta completa en el historial de chat
+    st.session_state["chat_history"].append(
+        {"role": "assistant", "content": streamed_response},
+    )
 
 # Función para generar contenido a partir de un modelo Groq
 def generate_content(modelo:str, prompt:str, system_message:str="You are a helpful assistant.", max_tokens:int=1024, temperature:int=0.5):
