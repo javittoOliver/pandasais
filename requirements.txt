@@ -10,3 +10,4 @@ ffmpeg-python
 torch
 pandasai
 langchain-groq
+matplotlib
