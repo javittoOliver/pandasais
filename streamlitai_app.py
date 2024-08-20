@@ -48,52 +48,25 @@ def generate_content(modelo:str, prompt:str, system_message:str="You are a helpf
     return stream
 
 # Función para transcribir audio usando Whisper
-def transcribir_audio_por_segmentos(uploaded_audio, segment_duration=5):
-    # Leer el contenido del archivo de audio
-    audio_bytes = uploaded_audio.read()
-    
-    # Convertir los bytes del audio a un archivo temporal que soundfile pueda leer
-    audio_file = io.BytesIO(audio_bytes)
-    
-    # Leer el archivo de audio usando soundfile para obtener los datos de audio y la frecuencia de muestreo
-    audio_data, sample_rate = sf.read(audio_file)
-    
-    # Convertir a mono si es estéreo
-    if audio_data.ndim > 1:
-        audio_data = np.mean(audio_data, axis=1)
-    
-    # Convertir los datos de audio a float32
-    audio_data = audio_data.astype(np.float32)
-    
-    # Calcular el número de muestras por segmento
-    segment_samples = int(segment_duration * sample_rate)
-    
+
+def transcribir_audio_por_segmentos(uploaded_audio):
     # Verificar si la GPU admite FP16
-    if torch.cuda.is_available() and torch.cuda.get_device_capability(0)[0] >= 7:
-        fp16_available = True
-    else:
-        fp16_available = False
+    fp16_available = torch.cuda.is_available() and torch.cuda.get_device_capability(0)[0] >= 7
     
     # Cargar el modelo Whisper
     model = whisper.load_model("small")
+    print("Whisper model loaded.")
     
-    transcripcion_completa = ""
-
-    # Procesar y transcribir cada segmento del audio
-    for start in range(0, len(audio_data), segment_samples):
-        end = min(start + segment_samples, len(audio_data))
-        segment = audio_data[start:end]
-        
-        # Transcribir el segmento de audio
-        if fp16_available:
-            result = model.transcribe(segment, fp16=True)
-        else:
-            result = model.transcribe(segment, fp16=False)
-        
-        # Concatenar la transcripción del segmento al resultado final
-        transcripcion_completa += result["text"] + " "
+    # Leer el archivo de audio
+    audio_bytes = uploaded_audio.read()
     
-    return transcripcion_completa.strip()
+    # Convertir los bytes leídos en un archivo temporal que Whisper pueda procesar
+    audio_file = io.BytesIO(audio_bytes)
+    
+    # Transcribir el audio utilizando el archivo temporal
+    result = model.transcribe(audio_file, fp16=fp16_available)
+    
+    return result
 
 # Título de la aplicación Streamlit
 st.title("Loope x- 🤖")
