@@ -145,7 +145,7 @@ if uploaded_audio is not None and not st.session_state["transcripcion_finalizada
         transcripcion = transcribir_audio_por_segmentos(uploaded_audio)
         
         # Muestra un mensaje de que la transcripción ha finalizado
-        st.write("La transcripción ha finalizado. Puedes hacer preguntas sobre el contenido.)
+        st.write("La transcripción ha finalizado. Puedes hacer preguntas sobre el contenido.")
         
         # Guardar la transcripción en el estado de sesión para referencia futura
         st.session_state["transcripcion"] = transcripcion
