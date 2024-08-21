@@ -11,6 +11,7 @@ import json
 import io
 import soundfile as sf
 import matplotlib.pyplot as plt
+import datetime
 
 # Configura la página de Streamlit para que use todo el ancho disponible
 st.set_page_config(layout="wide")
@@ -49,7 +50,7 @@ def generate_content(modelo:str, prompt:str, system_message:str="You are a helpf
 
 # Función para transcribir audio usando Whisper
 
-def transcribir_audio_por_segmentos(uploaded_audio, segment_duration=10):
+def transcribir_audio_por_segmentos(uploaded_audio):
     # Leer el contenido del archivo de audio
     audio_bytes = uploaded_audio.read()
     
@@ -66,35 +67,33 @@ def transcribir_audio_por_segmentos(uploaded_audio, segment_duration=10):
     # Convertir los datos de audio a float32
     audio_data = audio_data.astype(np.float32)
     
-    # Calcular el número de muestras por segmento
-    segment_samples = int(segment_duration * sample_rate)
-    
-    # Verificar si la GPU admite FP16
+    # Verificar si la GPU admite FP16 
     if torch.cuda.is_available() and torch.cuda.get_device_capability(0)[0] >= 7:
         fp16_available = True
     else:
-        fp16_available = False
+         fp16_available = False
     
-    # Cargar el modelo Whisper
     model = whisper.load_model("small")
-    
-    transcripcion_completa = ""
 
-    # Procesar y transcribir cada segmento del audio
-    for start in range(0, len(audio_data), segment_samples):
-        end = min(start + segment_samples, len(audio_data))
-        segment = audio_data[start:end]
-        
-        # Transcribir el segmento de audio
-        if fp16_available:
-            result = model.transcribe(segment, fp16=True)
-        else:
-            result = model.transcribe(segment, fp16=False)
-        
-        # Concatenar la transcripción del segmento al resultado final
-        transcripcion_completa += result["text"] + " "
+    if fp16_available:
+        result = model.transcribe(audio_data)
+    else:
+        result = model.transcribe(audio_data, fp16=False)   
     
-    return transcripcion_completa.strip()
+    #model = whisper.load_model("base")
+    print("Whisper model loaded.")
+    result = model.transcribe(audio_data)
+    segments = pd.DataFrame(result['segments'])[['start', 'end','text']]
+    
+    # Función para convertir segundos a hh:mm:ss
+    def seconds_to_time(seconds):
+        return str(datetime.timedelta(seconds=seconds))
+
+    # Aplicar la función a las columnas 'start' y 'end'
+    segments['start'] = segments['start'].apply(seconds_to_time)
+    segments['end'] = segments['end'].apply(seconds_to_time)
+    conversacion = '\n'.join(f"{row['start']} {row['end']} {row['text']}" for _, row in segments.iterrows())
+    return conversacion
 
 # Título de la aplicación Streamlit
 st.title("Loope x- 🤖")
@@ -143,7 +142,7 @@ if uploaded_audio is not None and not st.session_state["transcripcion_finalizada
     
     try:
         # Intenta transcribir el audio
-        transcripcion = transcribir_audio_por_segmentos(uploaded_audio, segment_duration=30)
+        transcripcion = transcribir_audio_por_segmentos(uploaded_audio)
         
         # Muestra un mensaje de que la transcripción ha finalizado
         st.write("La transcripción ha finalizado. Puedes hacer preguntas sobre el contenido.")
