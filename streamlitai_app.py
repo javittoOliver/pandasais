@@ -97,7 +97,7 @@ def transcribir_audio_por_segmentos(uploaded_audio):
 
 # Título de la aplicación Streamlit
 st.title("Loope x- 🤖")
-
+st.markdown('<a href="https://presentaciones-vitto.streamlit.app/" target="_blank">Generador de presentaciones</a>', unsafe_allow_html=True)
 # Barra lateral para cargar archivo, seleccionar modelo y ajustar parámetros
 with st.sidebar:
     st.write("Estás usando  **Streamlit💻** and **Groq🖥**\n from Vitto ✳️")
