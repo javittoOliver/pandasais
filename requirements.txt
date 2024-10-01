@@ -11,3 +11,4 @@ torch
 pandasai
 langchain-groq
 matplotlib
+seaborn
