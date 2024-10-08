@@ -142,6 +142,11 @@ if "transcripcion_finalizada" not in st.session_state:
 if "transcripcion" not in st.session_state:
     st.session_state["transcripcion"] = ""
 
+# Inicializa el estado de la sesión si aún no existe
+if "chat_history" not in st.session_state:
+    st.session_state["chat_history"] = []
+
+
 # Si se ha cargado un archivo de audio, lo transcribe y muestra un mensaje cuando ha terminado
 if uploaded_audio is not None and not st.session_state["transcripcion_finalizada"]:
     st.write("Transcribiendo el audio...")
