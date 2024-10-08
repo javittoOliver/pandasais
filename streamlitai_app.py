@@ -14,6 +14,11 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 import datetime
 import uuid
+import os
+import uuid
+
+
+
 
 # Configura la página de Streamlit para que use todo el ancho disponible
 st.set_page_config(layout="wide")
@@ -211,12 +216,6 @@ if st.session_state["transcripcion_finalizada"] and uploaded_audio is not None:
         except Exception as e:
             st.error("Ocurrió un error al generar la respuesta. Por favor, intenta nuevamente.")
 
-# Si se ha cargado un archivo Excel, procesa y muestra su contenido
-import os
-import uuid
-import json
-import pandas as pd
-import streamlit as st
 
 # Inicializa el estado de la sesión si aún no existe
 if "chat_history" not in st.session_state:
