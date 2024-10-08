@@ -223,17 +223,15 @@ if st.session_state["transcripcion_finalizada"] and uploaded_audio is not None:
             st.error("Ocurrió un error al generar la respuesta. Por favor, intenta nuevamente.")
 
 
-# Inicializa el estado de la sesión si aún no existe
-if "chat_history" not in st.session_state:
-    st.session_state["chat_history"] = []
-
-if "chart_history" not in st.session_state:
-    st.session_state["chart_history"] = []
-
+# Si se ha cargado un archivo Excel, procesa y muestra su contenido
 if uploaded_file is not None:
     try:
         # Carga el archivo Excel en un DataFrame
-        dfs = pd.read_excel(uploaded_file)
+        # Determina el tipo de archivo según la extensión y carga en el DataFrame
+        if uploaded_file.name.endswith('.csv'):
+            dfs = pd.read_csv(uploaded_file)  # Cargar CSV
+        else:
+            dfs = pd.read_excel(uploaded_file)  # Cargar Excel
         
         # Convertir columnas de texto a tipo str
         df = dfs.astype({col: str for col in dfs.select_dtypes(include=['object']).columns})
@@ -251,13 +249,14 @@ if uploaded_file is not None:
         lista_diccionario_texto = json.dumps(lista_diccionario, ensure_ascii=False, indent=2)
 
         # Inicializa el modelo para interactuar con PandasAI
-        llm = ChatGroq(model_name=modelo, api_key=api_key)  # Asegúrate que `ChatGroq` esté bien definido
+        llm = ChatGroq(model_name=modelo, api_key=api_key)
         smart_df = SmartDataframe(dfs, config={'llm': llm})
 
         # Solicita preguntas separadas para cada barra de chat
         prompt_pandasai = st.chat_input("Haz una petición para el archivo (PandasAI)...")
         prompt_dict = st.chat_input("Haz una pregunta sobre el archivo (Diccionario)...")
         
+
         if prompt_pandasai:
             # Agrega la consulta actual al historial de chat
             st.session_state["chat_history"].append({"role": "user", "content": prompt_pandasai})
@@ -277,7 +276,6 @@ if uploaded_file is not None:
                 f"Consulta actual:\n{current_question}"
             )
             
-            # Verifica si la función smart_df.chat está bien implementada
             response_pandasai = smart_df.chat(code_prompt)
         
             with st.chat_message("assistant"):
@@ -285,7 +283,8 @@ if uploaded_file is not None:
         
             # Agrega la respuesta al historial de chat
             st.session_state["chat_history"].append({"role": "assistant", "content": response_pandasai})
-            
+
+            import uuid
             if 'chart_files' not in st.session_state:
                 st.session_state.chart_files = []
 
@@ -304,14 +303,13 @@ if uploaded_file is not None:
                 st.write(chart_filename)
             else:
                 st.write("")
-
+                
         if prompt_dict:
             st.session_state["chat_history"].append({"role": "user", "content": prompt_dict})
             with st.chat_message("user"):
                 st.write(prompt_dict)
 
             response_prompt = f"{prompt_dict}\n\nDatos del archivo:\n{lista_diccionario_texto}"
-            # Verifica si la función generate_content está bien implementada
             response = generate_content(modelo, response_prompt, system_message, max_tokens, temperature)
 
             with st.chat_message("assistant"):
@@ -322,7 +320,8 @@ if uploaded_file is not None:
 
     except Exception as e:
         # Muestra un mensaje de error simple en caso de que ocurra un problema
-        st.error(f"Ocurrió un error al procesar el archivo: {str(e)}.")
+        st.error("Ocurrió un error al procesar el archivo. Por favor, intenta de nuevo.")
+
 
 # Si no se ha cargado un archivo, permite hacer preguntas generales
 if uploaded_file is None and uploaded_audio is None:
