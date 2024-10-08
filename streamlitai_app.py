@@ -212,6 +212,19 @@ if st.session_state["transcripcion_finalizada"] and uploaded_audio is not None:
             st.error("Ocurrió un error al generar la respuesta. Por favor, intenta nuevamente.")
 
 # Si se ha cargado un archivo Excel, procesa y muestra su contenido
+import os
+import uuid
+import json
+import pandas as pd
+import streamlit as st
+
+# Inicializa el estado de la sesión si aún no existe
+if "chat_history" not in st.session_state:
+    st.session_state["chat_history"] = []
+
+if "chart_history" not in st.session_state:
+    st.session_state["chart_history"] = []
+
 if uploaded_file is not None:
     try:
         # Carga el archivo Excel en un DataFrame
@@ -270,16 +283,14 @@ if uploaded_file is not None:
             
             # Generar un nombre de archivo único usando un UUID o un timestamp
             chart_filename = f"exports/charts/chart_{uuid.uuid4()}.png"
-            temp_chart_path = "exports/charts/temp_chart.png"
-            
-            if os.path.exists(temp_chart_path):
+            if os.path.exists("exports/charts/temp_chart.png"):
                 # Renombrar el archivo temporal con el nuevo nombre único
-                os.rename(temp_chart_path, chart_filename)
+                os.rename("exports/charts/temp_chart.png", chart_filename)
                 
                 # Almacenar el nombre del archivo en el estado de la sesión
                 st.session_state["chart_history"].append(chart_filename)
 
-                # Mostrar la imagen actual renombrada
+                # Mostrar la imagen actual
                 st.image(chart_filename)
             else:
                 st.write("No se generó ningún gráfico.")
