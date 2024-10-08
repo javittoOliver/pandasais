@@ -321,7 +321,6 @@ if uploaded_file is not None:
         # Muestra un mensaje de error simple en caso de que ocurra un problema
         st.error("Ocurrió un error al procesar el archivo. Por favor, intenta de nuevo.")
 
-
 # Si no se ha cargado un archivo, permite hacer preguntas generales
 if uploaded_file is None and uploaded_audio is None:
     prompt = st.chat_input("Haz una pregunta general...")
