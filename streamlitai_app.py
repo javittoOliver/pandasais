@@ -114,7 +114,7 @@ with st.sidebar:
     st.write("Estás usando  **Streamlit💻** and **Groq🖥**\n from Vitto ✳️")
     
     # Permite al usuario subir un archivo Excel
-    uploaded_file = st.file_uploader("Sube un archivo Excel", type=["xlsx", "xls"])
+    uploaded_file = st.file_uploader("Sube un archivo Excel", type=["csv", "xlsx", "xls"])
 
     # Permite al usuario subir un archivo de audio
     uploaded_audio = st.file_uploader("Sube un archivo de audio", type=["mp3", "wav", "ogg", "flac"])
