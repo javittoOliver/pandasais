@@ -150,6 +150,13 @@ if st.session_state["chart_history"]:
         st.image(chart_file)  # Mostrar cada imagen guardada en el historial
 
 
+# Inicializa el estado de sesión si no existe
+if "transcripcion_finalizada" not in st.session_state:
+    st.session_state["transcripcion_finalizada"] = False
+if "transcripcion" not in st.session_state:
+    st.session_state["transcripcion"] = ""
+
+
 # Si se ha cargado un archivo de audio, lo transcribe y muestra un mensaje cuando ha terminado
 if uploaded_audio is not None and not st.session_state["transcripcion_finalizada"]:
     st.write("Transcribiendo el audio...")
