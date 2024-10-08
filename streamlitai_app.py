@@ -13,6 +13,7 @@ import soundfile as sf
 import seaborn as sns
 import matplotlib.pyplot as plt
 import datetime
+import uuid
 
 # Configura la página de Streamlit para que use todo el ancho disponible
 st.set_page_config(layout="wide")
