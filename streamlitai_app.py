@@ -228,7 +228,7 @@ if uploaded_file is not None:
         lista_diccionario_texto = json.dumps(lista_diccionario, ensure_ascii=False, indent=2)
 
         # Inicializa el modelo para interactuar con PandasAI
-        llm = ChatGroq(model_name=modelo, api_key=api_key)
+        llm = ChatGroq(model_name=modelo, api_key=api_key)  # Asegúrate que `ChatGroq` esté bien definido
         smart_df = SmartDataframe(dfs, config={'llm': llm})
 
         # Solicita preguntas separadas para cada barra de chat
@@ -254,6 +254,7 @@ if uploaded_file is not None:
                 f"Consulta actual:\n{current_question}"
             )
             
+            # Verifica si la función smart_df.chat está bien implementada
             response_pandasai = smart_df.chat(code_prompt)
         
             with st.chat_message("assistant"):
@@ -264,25 +265,22 @@ if uploaded_file is not None:
             
             # Generar un nombre de archivo único usando un UUID o un timestamp
             chart_filename = f"exports/charts/chart_{uuid.uuid4()}.png"
-            if os.path.exists("exports/charts/temp_chart.png"):
+            temp_chart_path = "exports/charts/temp_chart.png"
+            
+            if os.path.exists(temp_chart_path):
                 # Renombrar el archivo temporal con el nuevo nombre único
-                os.rename("exports/charts/temp_chart.png", chart_filename)
+                os.rename(temp_chart_path, chart_filename)
                 
                 # Almacenar el nombre del archivo en el estado de la sesión
-                if "chart_history" not in st.session_state:
-                    st.session_state["chart_history"] = []
                 st.session_state["chart_history"].append(chart_filename)
 
-                # Mostrar la imagen actual
+                # Mostrar la imagen actual renombrada
                 st.image(chart_filename)
             else:
-                if 'response' in locals():
-                    st.write(response)
-                else:
-                    st.write("")
-        
+                st.write("No se generó ningún gráfico.")
+
         # Muestra el historial de gráficos generados
-        if "chart_history" in st.session_state:
+        if st.session_state["chart_history"]:
             st.write("Historial de gráficos generados:")
             for chart_file in st.session_state["chart_history"]:
                 st.image(chart_file)  # Mostrar cada imagen guardada en el historial
@@ -293,6 +291,7 @@ if uploaded_file is not None:
                 st.write(prompt_dict)
 
             response_prompt = f"{prompt_dict}\n\nDatos del archivo:\n{lista_diccionario_texto}"
+            # Verifica si la función generate_content está bien implementada
             response = generate_content(modelo, response_prompt, system_message, max_tokens, temperature)
 
             with st.chat_message("assistant"):
@@ -303,7 +302,7 @@ if uploaded_file is not None:
 
     except Exception as e:
         # Muestra un mensaje de error simple en caso de que ocurra un problema
-        st.error("Ocurrió un error al procesar el archivo. Por favor, intenta de nuevo.")
+        st.error(f"Ocurrió un error al procesar el archivo: {str(e)}.")
 
 # Si no se ha cargado un archivo, permite hacer preguntas generales
 if uploaded_file is None and uploaded_audio is None:
