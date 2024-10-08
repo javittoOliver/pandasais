@@ -139,7 +139,13 @@ if "chat_history" not in st.session_state:
 for message in st.session_state["chat_history"]:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
-
+        
+# Muestra el historial de gráficos generados
+if st.session_state["chart_history"]:
+    st.write("Historial de gráficos generados:")
+    for chart_file in st.session_state["chart_history"]:
+        st.image(chart_file)  # Mostrar cada imagen guardada en el historial
+        
 
 # Inicializa el estado de sesión si no existe
 if "transcripcion_finalizada" not in st.session_state:
@@ -280,25 +286,24 @@ if uploaded_file is not None:
             # Agrega la respuesta al historial de chat
             st.session_state["chat_history"].append({"role": "assistant", "content": response_pandasai})
             
-            # Generar un nombre de archivo único usando un UUID o un timestamp
+            if 'chart_files' not in st.session_state:
+                st.session_state.chart_files = []
+
+            # Verificar si el archivo existe
             chart_filename = f"exports/charts/chart_{uuid.uuid4()}.png"
             if os.path.exists("exports/charts/temp_chart.png"):
-                # Renombrar el archivo temporal con el nuevo nombre único
+                st.image("exports/charts/temp_chart.png")
                 os.rename("exports/charts/temp_chart.png", chart_filename)
-                
-                # Almacenar el nombre del archivo en el estado de la sesión
-                st.session_state["chart_history"].append(chart_filename)
 
-                # Mostrar la imagen actual
-                st.image(chart_filename)
+            # Almacenar el nombre del archivo en el estado de la sesión
+            st.session_state["chart_history"].append(chart_filename)
+
+            # Mostrar el contenido de la respuesta si existe
+            
+            if 'response' in locals():
+                st.write(chart_filename)
             else:
-                st.write("No se generó ningún gráfico.")
-
-        # Muestra el historial de gráficos generados
-        if st.session_state["chart_history"]:
-            st.write("Historial de gráficos generados:")
-            for chart_file in st.session_state["chart_history"]:
-                st.image(chart_file)  # Mostrar cada imagen guardada en el historial
+                st.write("")
 
         if prompt_dict:
             st.session_state["chat_history"].append({"role": "user", "content": prompt_dict})
