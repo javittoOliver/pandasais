@@ -234,7 +234,6 @@ if uploaded_file is not None:
         prompt_pandasai = st.chat_input("Haz una petición para el archivo (PandasAI)...")
         prompt_dict = st.chat_input("Haz una pregunta sobre el archivo (Diccionario)...")
         
-
         if prompt_pandasai:
             # Agrega la consulta actual al historial de chat
             st.session_state["chat_history"].append({"role": "user", "content": prompt_pandasai})
@@ -265,30 +264,27 @@ if uploaded_file is not None:
             # Generar un nombre de archivo único usando un UUID o un timestamp
             chart_filename = f"exports/charts/chart_{uuid.uuid4()}.png"
             if os.path.exists("exports/charts/temp_chart.png"):
-                 # Renombrar el archivo temporal con el nuevo nombre único
+                # Renombrar el archivo temporal con el nuevo nombre único
                 os.rename("exports/charts/temp_chart.png", chart_filename)
+                
                 # Almacenar el nombre del archivo en el estado de la sesión
                 if "chart_history" not in st.session_state:
                     st.session_state["chart_history"] = []
                 st.session_state["chart_history"].append(chart_filename)
 
-                # Mostrar la imagen
+                # Mostrar la imagen actual
                 st.image(chart_filename)
-
-                #st.image("exports/charts/temp_chart.png")
-                #os.remove("exports/charts/temp_chart.png")
             else:
                 if 'response' in locals():
                     st.write(response)
                 else:
                     st.write("")
-                    
+        
         # Muestra el historial de gráficos generados
         if "chart_history" in st.session_state:
             st.write("Historial de gráficos generados:")
             for chart_file in st.session_state["chart_history"]:
-                st.image(chart_file)  # Mostrar cada imagen guardada en el historial                    
-                 
+                st.image(chart_file)  # Mostrar cada imagen guardada en el historial
 
         if prompt_dict:
             st.session_state["chat_history"].append({"role": "user", "content": prompt_dict})
