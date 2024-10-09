@@ -274,13 +274,16 @@ if uploaded_file is not None:
 
             st.session_state["chat_history"].append({"role": "assistant", "content": response_pandasai})
 
-            # Verificar y manejar las gráficas
+            # Manejo de gráficos y persistencia en el historial
             if 'chart_files' not in st.session_state:
                 st.session_state.chart_files = []
 
             chart_filename = f"exports/charts/chart_{uuid.uuid4()}.png"
             if os.path.exists("exports/charts/temp_chart.png"):
+                # Mostrar la imagen en la interfaz
                 st.image("exports/charts/temp_chart.png")
+                
+                # Renombrar la imagen y almacenarla
                 os.rename("exports/charts/temp_chart.png", chart_filename)
                 st.session_state["chart_files"].append(chart_filename)
 
@@ -303,6 +306,11 @@ if uploaded_file is not None:
     except Exception as e:
         # Mostrar un mensaje de error con más detalles
         st.error(f"Ocurrió un error al procesar el archivo: {e}")
+
+# Mostrar gráficas almacenadas en el historial al recargar la página
+if 'chart_files' in st.session_state:
+    for chart_file in st.session_state["chart_files"]:
+        st.image(chart_file)
 
 # Si no se ha cargado un archivo, permite hacer preguntas generales
 if uploaded_file is None and uploaded_audio is None:
