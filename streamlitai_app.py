@@ -139,11 +139,16 @@ for message in st.session_state["chat_history"]:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
 
+# Mostrar gráficas almacenadas en el historial al recargar la página
+if 'chart_files' in st.session_state:
+    for chart_file in st.session_state["chart_files"]:
+        st.image(chart_file)
+
 # Muestra el historial de gráficos generados
-if st.session_state["chart_history"]:
-    st.write("Historial de gráficos generados:")
-    for chart_file in st.session_state["chart_history"]:
-        st.image(chart_file)  # Mostrar cada imagen guardada en el historial
+#if st.session_state["chart_history"]:
+    #st.write("Historial de gráficos generados:")
+    #for chart_file in st.session_state["chart_history"]:
+        #st.image(chart_file)  # Mostrar cada imagen guardada en el historial
 
 
 # Inicializa el estado de sesión si no existe
@@ -306,11 +311,6 @@ if uploaded_file is not None:
     except Exception as e:
         # Mostrar un mensaje de error con más detalles
         st.error(f"Ocurrió un error al procesar el archivo: {e}")
-
-# Mostrar gráficas almacenadas en el historial al recargar la página
-if 'chart_files' in st.session_state:
-    for chart_file in st.session_state["chart_files"]:
-        st.image(chart_file)
 
 # Si no se ha cargado un archivo, permite hacer preguntas generales
 if uploaded_file is None and uploaded_audio is None:
