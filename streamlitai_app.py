@@ -218,89 +218,76 @@ if st.session_state["transcripcion_finalizada"] and uploaded_audio is not None:
             st.error("Ocurrió un error al generar la respuesta. Por favor, intenta nuevamente.")
 
 
-# Si se ha cargado un archivo Excel, procesa y muestra su contenido
+# Si se ha cargado un archivo Excel o CSV, procesa y muestra su contenido
 if uploaded_file is not None:
     try:
-        # Carga el archivo Excel en un DataFrame
-        # Determina el tipo de archivo según la extensión y carga en el DataFrame
+        # Cargar el archivo según su extensión
         if uploaded_file.name.endswith('.csv'):
             dfs = pd.read_csv(uploaded_file)  # Cargar CSV
         else:
             dfs = pd.read_excel(uploaded_file)  # Cargar Excel
-        
+
         # Convertir columnas de texto a tipo str
         df = dfs.astype({col: str for col in dfs.select_dtypes(include=['object']).columns})
-        
-        # Muestra el contenido del archivo en la interfaz
+
+        # Mostrar contenido del archivo
         st.write("Contenido parcial del archivo:")
         st.dataframe(df.head(6))
 
-        # Convierte columnas de datetime a str si existen
+        # Convertir columnas datetime a str
         for col in df.select_dtypes(include=["datetime64[ns]"]).columns:
             df[col] = df[col].astype(str)
-        
+
         # Convertir DataFrame a lista de diccionarios
         lista_diccionario = df.to_dict(orient="records")
         lista_diccionario_texto = json.dumps(lista_diccionario, ensure_ascii=False, indent=2)
 
-        # Inicializa el modelo para interactuar con PandasAI
+        # Inicializa el modelo para PandasAI
         llm = ChatGroq(model_name=modelo, api_key=api_key)
         smart_df = SmartDataframe(dfs, config={'llm': llm})
 
-        # Solicita preguntas separadas para cada barra de chat
+        # Solicita preguntas para cada barra de chat
         prompt_pandasai = st.chat_input("Haz una petición para el archivo (PandasAI)...")
         prompt_dict = st.chat_input("Haz una pregunta sobre el archivo (Diccionario)...")
-        
 
+        # Manejo de entrada para PandasAI
         if prompt_pandasai:
-            # Agrega la consulta actual al historial de chat
             st.session_state["chat_history"].append({"role": "user", "content": prompt_pandasai})
-                                                  
+
             with st.chat_message("user"):
                 st.write(prompt_pandasai)
-        
-            # Construye el prompt con el historial como contexto
+
             combined_history = "\n".join([f"{msg['role']}: {msg['content']}" for msg in st.session_state["chat_history"][:-1]])
             current_question = f"{st.session_state['chat_history'][-1]['role']}: {st.session_state['chat_history'][-1]['content']}"
-        
-            # Prompt final con una instrucción clara sobre el idioma
+
             code_prompt = (
                 f"Considera la siguiente conversación previa como contexto y responde solo a la consulta actual. "
                 f"Responde en español.\n\n"
                 f"Contexto:\n{combined_history}\n\n"
                 f"Consulta actual:\n{current_question}"
             )
-            
+
             response_pandasai = smart_df.chat(code_prompt)
-        
+
             with st.chat_message("assistant"):
                 st.write(response_pandasai)
-        
-            # Agrega la respuesta al historial de chat
+
             st.session_state["chat_history"].append({"role": "assistant", "content": response_pandasai})
 
-            import uuid
+            # Verificar y manejar las gráficas
             if 'chart_files' not in st.session_state:
                 st.session_state.chart_files = []
-            
-            # Verificar si el archivo existe
+
             chart_filename = f"exports/charts/chart_{uuid.uuid4()}.png"
             if os.path.exists("exports/charts/temp_chart.png"):
                 st.image("exports/charts/temp_chart.png")
                 os.rename("exports/charts/temp_chart.png", chart_filename)
+                st.session_state["chart_files"].append(chart_filename)
 
-            # Almacenar el nombre del archivo en el estado de la sesión
-            st.session_state["chart_history"].append(chart_filename)
-
-            # Mostrar el contenido de la respuesta si existe
-            
-            if 'response' in locals():
-                st.write(response_pandasai)
-            else:
-                st.write("")
-                
+        # Manejo de entrada para preguntas basadas en diccionarios
         if prompt_dict:
             st.session_state["chat_history"].append({"role": "user", "content": prompt_dict})
+
             with st.chat_message("user"):
                 st.write(prompt_dict)
 
@@ -314,8 +301,8 @@ if uploaded_file is not None:
             st.session_state["chat_history"].append({"role": "assistant", "content": streamed_response})
 
     except Exception as e:
-        # Muestra un mensaje de error simple en caso de que ocurra un problema
-        st.error("Ocurrió un error al procesar el archivo. Por favor, intenta de nuevo.")
+        # Mostrar un mensaje de error con más detalles
+        st.error(f"Ocurrió un error al procesar el archivo: {e}")
 
 # Si no se ha cargado un archivo, permite hacer preguntas generales
 if uploaded_file is None and uploaded_audio is None:
