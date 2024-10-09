@@ -282,7 +282,7 @@ if uploaded_file is not None:
             import uuid
             if 'chart_files' not in st.session_state:
                 st.session_state.chart_files = []
-
+            
             # Verificar si el archivo existe
             chart_filename = f"exports/charts/chart_{uuid.uuid4()}.png"
             if os.path.exists("exports/charts/temp_chart.png"):
@@ -295,7 +295,7 @@ if uploaded_file is not None:
             # Mostrar el contenido de la respuesta si existe
             
             if 'response' in locals():
-                st.write(chart_filename)
+                st.write(response_pandasai)
             else:
                 st.write("")
                 
