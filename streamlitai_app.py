@@ -15,7 +15,7 @@ import matplotlib.pyplot as plt
 import datetime
 import uuid
 import textblob
-
+from textblob import TextBlob
 
 # Configura la página de Streamlit para que use todo el ancho disponible
 st.set_page_config(layout="wide")
