@@ -15,7 +15,6 @@ import matplotlib.pyplot as plt
 import datetime
 import uuid
 from textblob import TextBlob
-import googletrans
 from deep_translator import GoogleTranslator
 
 # Configura la página de Streamlit para que use todo el ancho disponible
@@ -251,7 +250,7 @@ if uploaded_file is not None:
 
         # Inicializa el modelo para PandasAI
         llm = ChatGroq(model_name=modelo, api_key=api_key)
-        smart_df = SmartDataframe(dfs, config={'llm': llm, 'custom_whitelisted_dependencies': ['textblob', 'translate', 'deep_translator', 'googletrans']})
+        smart_df = SmartDataframe(dfs, config={'llm': llm, 'custom_whitelisted_dependencies': ['textblob', 'translate', 'deep_translator', 'GoogleTranslator']})
 
         # Solicita preguntas para cada barra de chat
         prompt_pandasai = st.chat_input("Haz una petición para el archivo (PandasAI)...")
