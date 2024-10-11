@@ -14,7 +14,7 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 import datetime
 import uuid
-from textblob import TextBlob
+import textblob
 
 
 # Configura la página de Streamlit para que use todo el ancho disponible
