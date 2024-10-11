@@ -16,3 +16,4 @@ textblob
 googletrans
 deep-translator
 deepl
+time
