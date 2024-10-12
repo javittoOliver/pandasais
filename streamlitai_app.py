@@ -251,7 +251,7 @@ if uploaded_file is not None:
 
         # Inicializa el modelo para PandasAI
         llm = ChatGroq(model_name=modelo, api_key=api_key)
-        smart_df = SmartDataframe(dfs, config={'llm': llm, 'custom_whitelisted_dependencies': ['textblob', 'translate', 'deep_translator', 'GoogleTranslator', 'googletrans']})
+        smart_df = SmartDataframe(dfs, config={'llm': llm, 'custom_whitelisted_dependencies': ['textblob', 'translate', 'deep_translator', 'GoogleTranslator']})
 
         # Solicita preguntas para cada barra de chat
         prompt_pandasai = st.chat_input("Haz una petición para el archivo (PandasAI)...")
