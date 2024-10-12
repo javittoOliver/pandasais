@@ -16,7 +16,7 @@ import datetime
 import uuid
 from textblob import TextBlob
 from deep_translator import GoogleTranslator
-import time
+
 
 # Configura la página de Streamlit para que use todo el ancho disponible
 st.set_page_config(layout="wide")
@@ -251,7 +251,7 @@ if uploaded_file is not None:
 
         # Inicializa el modelo para PandasAI
         llm = ChatGroq(model_name=modelo, api_key=api_key)
-        smart_df = SmartDataframe(dfs, config={'llm': llm, 'custom_whitelisted_dependencies': ['textblob', 'translate', 'deep_translator', 'GoogleTranslator', 'googletrans', 'deepl', 'time']})
+        smart_df = SmartDataframe(dfs, config={'llm': llm, 'custom_whitelisted_dependencies': ['textblob', 'translate', 'deep_translator', 'GoogleTranslator', 'googletrans']})
 
         # Solicita preguntas para cada barra de chat
         prompt_pandasai = st.chat_input("Haz una petición para el archivo (PandasAI)...")
@@ -330,6 +330,10 @@ if uploaded_file is None and uploaded_audio is None:
         with st.chat_message("assistant"):
             stream_generator = get_streaming_response(response)
             streamed_response = st.write_stream(stream_generator)
+        
+        st.session_state["chat_history"].append(
+            {"role": "assistant", "content": streamed_response},
+        )
         
         st.session_state["chat_history"].append(
             {"role": "assistant", "content": streamed_response},
