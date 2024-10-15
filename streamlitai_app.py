@@ -16,6 +16,7 @@ import datetime
 import uuid
 from textblob import TextBlob
 from deep_translator import GoogleTranslator
+import nltk
 
 
 # Configura la página de Streamlit para que use todo el ancho disponible
