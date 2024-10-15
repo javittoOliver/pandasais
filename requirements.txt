@@ -16,3 +16,4 @@ seaborn
 textblob
 googletrans
 deep-translator
+nltk
