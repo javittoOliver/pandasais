@@ -109,7 +109,7 @@ st.markdown('''
 ''', unsafe_allow_html=True)
 # Barra lateral para cargar archivo, seleccionar modelo y ajustar parámetros
 with st.sidebar:
-    st.write("Estás usando  **Streamlit💻** and **Groq🖥**\n from Vitto ✳️")
+    st.write("Estás usando  **Streamlit💻** and **Groq🖥**\n from INN&P ✳️")
     
     # Permite al usuario subir un archivo Excel
     uploaded_file = st.file_uploader("Sube un archivo Excel", type=["csv", "xlsx", "xls"])
