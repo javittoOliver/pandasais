@@ -118,7 +118,7 @@ with st.sidebar:
     uploaded_audio = st.file_uploader("Sube un archivo de audio", type=["mp3", "wav", "ogg", "flac"])
 
     # Permite al usuario seleccionar el modelo a utilizar
-    modelo = st.selectbox("Modelo", ["llama-3.1-70b-versatile", "llama3-70b-8192", "mixtral-8x7b-32768", "gemma2-9b-it"])
+    modelo = st.selectbox("Modelo", ["llama-3.3-70b-versatile", "llama3-70b-8192", "mixtral-8x7b-32768", "gemma2-9b-it"])
 
     # Permite al usuario ingresar un mensaje de sistema
     system_message = st.text_input("System Message", placeholder="Default : Eres un asistente amigable.")
